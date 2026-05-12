@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lucky-RED</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #0f0c15; color: #e2e8f0; overflow-x: hidden; touch-action: manipulation; user-select: none; }
+        .title-font { font-family: 'Playfair Display', serif; }
+
+        /* Fondo Animado Rojo Lucky-RED */
+        .bg-animated { background: linear-gradient(-45deg, #450a0a, #7f1d1d, #0f0c15, #991b1b); background-size: 400% 400%; animation: gradientBG 15s ease infinite; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+        .dice-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-1deg); } 20%, 80% { transform: translate3d(2px, 0, 0) rotate(2deg); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(-2deg); } 40%, 60% { transform: translate3d(4px, 0, 0) rotate(2deg); } }
+
+        .btn-menu-primary { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+        .btn-menu-secondary { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
+
+        .timer-display { font-variant-numeric: tabular-nums; letter-spacing: 0.1em; text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        .hidden-screen { display: none !important; }
+        .glow-text { text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.5); border-radius: 10px; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col relative overflow-hidden">
+<div class="bg-animated"></div>
+
+<!-- PANTALLA: SETUP INICIAL -->
+<section id="view-setup" class="w-full h-full flex flex-col items-center justify-center p-6 gap-6 z-30 absolute inset-0 bg-[#0f0c15]/90 backdrop-blur-md">
+    <div class="text-center mb-4">
+        <h1 class="text-5xl font-bold title-font text-white glow-text mb-2">Lucky RED</h1>
+        <p class="text-red-200/60 text-sm tracking-widest uppercase">Identifíquense</p>
+    </div>
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-8 flex flex-col gap-4">
+        <div>
+            <label class="block text-red-300 text-xs uppercase font-bold mb-2 ml-1">Jugador 1</label>
+            <input type="text" id="setup-p1" placeholder="Ingresa tu nombre..." class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-red-500 transition-colors">
+        </div>
+        <div class="mt-2">
+            <label class="block text-red-300 text-xs uppercase font-bold mb-2 ml-1">Jugador 2</label>
+            <input type="text" id="setup-p2" placeholder="Ingresa tu nombre..." class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-sm focus:outline-none focus:border-red-500 transition-colors">
+        </div>
+        <button onclick="finishSetup()" class="btn-menu-primary w-full py-4 rounded-xl text-white font-bold text-sm tracking-widest uppercase mt-6 shadow-lg active:scale-95 transition-transform">Comenzar Aventura</button>
+    </div>
+</section>
+
+<!-- PANTALLA: MENÚ PRINCIPAL -->
+<section id="view-menu" class="hidden-screen w-full h-full flex flex-col items-center justify-center p-6 gap-8 z-10">
+    <div class="text-center mb-4">
+        <div class="inline-block p-4 bg-white/5 rounded-full mb-4 border border-white/10">
+            <i data-lucide="flame" class="w-12 h-12 text-red-500"></i>
+        </div>
+        <h1 class="text-4xl font-bold title-font text-white glow-text mb-2">Lucky RED</h1>
+        <p class="text-red-200/60 text-sm tracking-widest uppercase" id="welcome-names">Elige tu experiencia</p>
+    </div>
+
+    <button onclick="switchView('previo')" class="btn-menu-primary w-full max-w-sm p-6 rounded-2xl flex items-center justify-between group transition-transform active:scale-95">
+        <div class="text-left">
+            <h2 class="text-2xl font-bold text-white mb-1">El Previo</h2>
+            <p class="text-red-100 text-xs opacity-80">Juego de Escalada Erótica</p>
+        </div>
+        <i data-lucide="dices" class="w-8 h-8 text-white opacity-80 group-hover:rotate-12 transition-transform"></i>
+    </button>
+
+    <button onclick="switchView('acto')" class="btn-menu-secondary w-full max-w-sm p-6 rounded-2xl flex items-center justify-between group transition-transform active:scale-95">
+        <div class="text-left">
+            <h2 class="text-2xl font-bold text-white mb-1">En el Acto</h2>
+            <p class="text-purple-200 text-xs opacity-80">Posturas + Cronómetro</p>
+        </div>
+        <i data-lucide="layers" class="w-8 h-8 text-white opacity-80 group-hover:scale-110 transition-transform"></i>
+    </button>
+
+    <div class="absolute bottom-6 text-white/20 text-xs">vLucky-RED Premium DB v3</div>
+</section>
+
+<!-- HEADER COMÚN -->
+<header id="app-header" class="hidden-screen w-full p-4 flex justify-between items-center z-20 bg-black/20 backdrop-blur-sm">
+    <button onclick="switchView('menu')" class="p-2 text-white/70 hover:text-white bg-white/5 rounded-full">
+        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+    </button>
+    <h2 id="header-title" class="text-lg font-bold text-white title-font">Juego</h2>
+    <div class="flex gap-2">
+        <button onclick="toggleSettings()" class="p-2 text-white/70 hover:text-white bg-white/5 rounded-full">
+            <i data-lucide="settings-2" class="w-6 h-6"></i>
+        </button>
+        <button onclick="toggleVoice()" id="voiceBtn" class="p-2 text-red-400 hover:text-red-300 bg-red-500/10 rounded-full border border-red-500/30">
+            <i data-lucide="volume-2" class="w-6 h-6"></i>
+        </button>
+    </div>
+</header>
+
+<!-- PANTALLA: EL PREVIO (Dados) -->
+<section id="view-previo" class="hidden-screen flex-1 w-full max-w-md mx-auto px-6 flex flex-col justify-center gap-3 z-10 overflow-y-auto py-2">
+    <div class="w-full mb-2 bg-black/30 p-4 rounded-2xl border border-white/5">
+        <div id="turn-indicator" class="text-center text-xl font-bold text-white mb-3 title-font glow-text transition-all">
+            Jugador 1 <span class="text-red-500 text-sm mx-1">➜</span> Jugador 2
+        </div>
+        <div class="w-full bg-white/10 rounded-full h-1.5 mb-2 overflow-hidden">
+            <div id="temp-bar" class="bg-gradient-to-r from-pink-400 to-red-600 h-full transition-all duration-1000 w-1/3"></div>
+        </div>
+        <div class="flex justify-between items-center">
+            <p id="temp-text" class="text-[10px] text-red-300 uppercase tracking-widest font-bold">Nivel 1: Seducción</p>
+            <p id="roll-count-text" class="text-[10px] text-white/40 font-bold">Ronda 0</p>
+        </div>
+    </div>
+
+    <div class="glass-panel dice-card w-full rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden" id="card-action">
+        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-pink-400 transition-colors duration-500" id="color-action"></div>
+        <span class="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Acción</span>
+        <div class="dice-result text-white text-xl font-bold text-center leading-tight min-h-[30px] flex items-center justify-center" id="res-action"><i data-lucide="heart" class="w-6 h-6 opacity-30"></i></div>
+    </div>
+
+    <div class="glass-panel dice-card w-full rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden" id="card-part">
+        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-purple-300 transition-colors duration-500" id="color-part"></div>
+        <span class="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Zona</span>
+        <div class="dice-result text-white text-xl font-bold text-center leading-tight min-h-[30px] flex items-center justify-center" id="res-part"><i data-lucide="user" class="w-6 h-6 opacity-30"></i></div>
+    </div>
+
+    <div class="glass-panel dice-card w-full rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden" id="card-time">
+        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-400"></div>
+        <span class="text-white/50 text-[10px] font-bold uppercase tracking-widest mb-1">Tiempo</span>
+        <div class="dice-result text-white text-xl font-bold text-center leading-tight min-h-[30px] flex items-center justify-center" id="res-time"><i data-lucide="clock" class="w-6 h-6 opacity-30"></i></div>
+    </div>
+
+    <div id="timer-previo" class="hidden w-full bg-black/40 border border-white/10 rounded-2xl p-3 flex items-center justify-between transition-all mt-2">
+        <div class="flex items-center gap-3">
+            <div id="timer-display-previo" class="timer-display text-2xl font-bold text-white">00:00</div>
+            <div class="text-white/30 text-xs uppercase font-bold">Cronómetro</div>
+        </div>
+        <button onclick="toggleTimer('previo')" id="btn-timer-previo" class="bg-red-600 hover:bg-red-500 text-white p-2 rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i data-lucide="play" class="w-4 h-4 fill-current"></i></button>
+    </div>
+
+    <button onclick="rollPrevio()" id="btn-roll-previo" class="mt-2 btn-menu-primary w-full py-4 rounded-full text-white font-bold text-lg tracking-widest uppercase shadow-lg active:scale-95 transition-transform">Lanzar Dados</button>
+    <button onclick="switchView('acto')" id="btn-go-acto" class="hidden mt-3 w-full py-3 rounded-full border border-red-500/50 text-red-400 font-bold text-sm tracking-widest uppercase shadow-lg active:scale-95 transition-all hover:bg-red-500/10">🔥 Pasar al Acto 🔥</button>
+</section>
+
+<!-- PANTALLA: EN EL ACTO (Posturas) -->
+<section id="view-acto" class="hidden-screen flex-1 w-full max-w-md mx-auto px-6 flex flex-col justify-center gap-6 z-10">
+    <div class="glass-panel w-full rounded-3xl p-8 flex flex-col items-center justify-center relative min-h-[300px] text-center">
+
+        <span id="pose-type-badge" class="hidden text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 shadow-lg tracking-widest border border-white/20"></span>
+
+        <!-- Contenedor Inteligente de Imagen con Google Search -->
+        <div class="w-full h-32 flex items-center justify-center mb-4 relative cursor-pointer group" onclick="searchCurrentPose()">
+            <i id="pose-icon" data-lucide="layers" class="w-24 h-24 text-white opacity-10 absolute transition-opacity group-hover:opacity-5"></i>
+            <img id="pose-img" src="" class="hidden z-10 h-full w-auto object-contain drop-shadow-[0_0_15px_rgba(239,68,68,0.5)] group-hover:opacity-30 transition-opacity">
+
+            <!-- Overlay de Búsqueda -->
+            <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center rounded-xl z-20 transition-all border border-white/10">
+                    <span class="text-[10px] text-white font-bold uppercase tracking-widest flex items-center gap-2 bg-red-600/80 px-4 py-2 rounded-full shadow-xl">
+                        <i data-lucide="search" class="w-4 h-4"></i> Ver en Google
+                    </span>
+            </div>
+        </div>
+
+        <h3 class="text-purple-300 text-sm font-bold uppercase tracking-[0.2em] mb-2">Postura Sugerida</h3>
+        <div id="pose-name" class="text-4xl md:text-5xl font-bold text-white title-font glow-text mb-4">?</div>
+        <p id="pose-desc" class="text-white/60 text-sm italic max-w-xs">Toca el botón para generar una nueva posición.</p>
+    </div>
+
+    <div class="w-full bg-black/20 rounded-2xl p-4 flex flex-col items-center">
+        <div id="timer-display-acto" class="timer-display text-5xl font-bold text-white mb-4">00:00</div>
+        <div class="flex gap-4 w-full justify-center">
+            <button onclick="toggleTimer('acto')" id="btn-timer-acto" class="bg-purple-600 hover:bg-purple-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30 active:scale-95 transition-transform"><i data-lucide="play" class="w-6 h-6 fill-current"></i></button>
+            <button onclick="resetTimer('acto')" class="bg-white/10 hover:bg-white/20 text-white w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition-transform"><i data-lucide="rotate-ccw" class="w-6 h-6"></i></button>
+        </div>
+    </div>
+
+    <button onclick="rollActo()" id="btn-roll-acto" class="btn-menu-secondary w-full py-4 rounded-full text-white font-bold text-lg tracking-widest uppercase shadow-lg active:scale-95 transition-transform">Nueva Posición</button>
+</section>
+
+<!-- MODAL: AJUSTES -->
+<div id="settings-modal" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
+    <div class="glass-panel w-full max-w-sm rounded-2xl p-6 relative max-h-[90vh] overflow-y-auto custom-scroll">
+        <button onclick="toggleSettings()" class="absolute top-4 right-4 text-white/50 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i data-lucide="settings-2" class="w-5 h-5"></i> Configuración</h3>
+
+        <div class="mb-4">
+            <label class="block text-red-300 text-xs uppercase font-bold mb-2">Jugadores</label>
+            <div class="flex gap-2">
+                <input type="text" id="p1-name" value="Jugador 1" class="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-red-500" onchange="updateNamesFromSettings()">
+                <input type="text" id="p2-name" value="Jugador 2" class="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-white text-sm focus:outline-none focus:border-red-500" onchange="updateNamesFromSettings()">
+            </div>
+        </div>
+
+        <!-- Filtros de Tipos -->
+        <div class="mb-6">
+            <label class="block text-red-300 text-xs uppercase font-bold mb-2">Tipos Permitidos (Acto)</label>
+            <div class="grid grid-cols-2 gap-2 bg-black/30 p-3 rounded-lg border border-white/10">
+                <label class="flex items-center gap-2 text-white text-sm cursor-pointer"><input type="checkbox" id="filter-vaginal" checked onchange="saveFilters()" class="accent-red-500 w-4 h-4"> Vaginal</label>
+                <label class="flex items-center gap-2 text-white text-sm cursor-pointer"><input type="checkbox" id="filter-oral" checked onchange="saveFilters()" class="accent-red-500 w-4 h-4"> Oral</label>
+                <label class="flex items-center gap-2 text-white text-sm cursor-pointer"><input type="checkbox" id="filter-anal" checked onchange="saveFilters()" class="accent-red-500 w-4 h-4"> Anal</label>
+                <label class="flex items-center gap-2 text-white text-sm cursor-pointer"><input type="checkbox" id="filter-otra" checked onchange="saveFilters()" class="accent-red-500 w-4 h-4"> Otra</label>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-red-300 text-xs uppercase font-bold mb-2">Modo de Tiempo</label>
+            <div class="flex bg-black/30 rounded-lg p-1">
+                <button onclick="setTimerMode('dice')" id="mode-dice" class="flex-1 py-2 text-sm rounded-md bg-white/10 text-white transition-all">Dado</button>
+                <button onclick="setTimerMode('manual')" id="mode-manual" class="flex-1 py-2 text-sm rounded-md text-white/50 hover:text-white transition-all">Fijo</button>
+            </div>
+        </div>
+
+        <div id="manual-timer-control" class="mb-6 opacity-50 pointer-events-none transition-opacity">
+            <label class="block text-red-300 text-xs uppercase font-bold mb-2">Tiempo Fijo: <span id="manual-val" class="text-white">30s</span></label>
+            <input type="range" min="15" max="120" step="15" value="30" class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-red-500" oninput="updateManualVal(this.value)">
+        </div>
+
+        <button onclick="openDBModal()" class="w-full mb-4 bg-purple-900/40 hover:bg-purple-900/60 border border-purple-500/30 py-3 rounded-xl text-purple-200 text-sm font-bold flex justify-center items-center gap-2 transition-colors">
+            <i data-lucide="database" class="w-4 h-4"></i> Editar Posturas
+        </button>
+
+        <button onclick="toggleSettings()" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl text-white font-bold text-sm">Cerrar</button>
+    </div>
+</div>
+
+<!-- MODAL: BASE DE DATOS -->
+<div id="db-modal" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+    <div class="glass-panel w-full max-w-md rounded-2xl p-5 relative max-h-[95vh] overflow-y-auto custom-scroll border border-purple-500/30">
+        <button onclick="closeDBModal()" class="absolute top-4 right-4 text-white/50 hover:text-white"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+        <h3 class="text-xl font-bold text-purple-300 mb-1 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5"></i> Base de Datos</h3>
+        <p class="text-white/50 text-xs mb-4">Total guardadas: <span id="db-count" class="font-bold text-white">0</span></p>
+
+        <!-- Formulario Agregar/Editar -->
+        <div class="bg-black/40 p-4 rounded-xl border border-white/5 mb-4">
+            <h4 id="form-title" class="text-white text-sm font-bold mb-3">Agregar Nueva Postura</h4>
+            <div class="flex gap-2 mb-2">
+                <input type="text" id="new-pose-name" placeholder="Nombre (Ej. La Gata)" class="flex-1 bg-black/50 border border-white/10 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-purple-500">
+                <button onclick="searchEditorPose()" class="bg-blue-600/50 hover:bg-blue-500 text-white px-3 rounded-lg flex items-center justify-center border border-blue-500/50 transition-colors" title="Buscar en Google">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <input type="text" id="new-pose-desc" placeholder="Descripción breve..." class="w-full bg-black/50 border border-white/10 rounded-lg p-2 text-white text-xs mb-2 focus:outline-none focus:border-purple-500">
+            <div class="flex gap-2 mb-2">
+                <select id="new-pose-type" class="w-1/2 bg-black/50 border border-white/10 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-purple-500 appearance-none">
+                    <option value="Vaginal">Vaginal</option>
+                    <option value="Oral">Oral</option>
+                    <option value="Anal">Anal</option>
+                    <option value="Otra">Otra</option>
+                </select>
+                <input type="text" id="new-pose-img" oninput="previewEditorImage()" placeholder="Archivo (ej. foto_1.png)" class="w-1/2 bg-black/50 border border-white/10 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-purple-500">
+            </div>
+            <!-- Vista previa de la imagen que se está editando -->
+            <div class="w-full h-24 bg-black/50 border border-white/10 rounded-lg flex items-center justify-center mb-2 overflow-hidden relative">
+                <i id="editor-img-icon" data-lucide="image" class="w-8 h-8 text-white/20 absolute"></i>
+                <img id="editor-img-preview" src="" class="hidden z-10 h-full w-auto object-contain drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+            </div>
+            <div class="flex gap-2 mt-2">
+                <button id="btn-save-pose" onclick="savePoseFromUI()" class="flex-1 bg-purple-600 hover:bg-purple-500 py-2 rounded-lg text-white font-bold text-xs transition-colors">Guardar</button>
+                <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 bg-gray-600 hover:bg-gray-500 py-2 rounded-lg text-white font-bold text-xs transition-colors">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Lista de Posturas -->
+        <div class="border-t border-white/10 pt-4 mb-4">
+            <h4 class="text-white/70 text-xs font-bold mb-2 uppercase tracking-widest">Tus Posturas</h4>
+            <div id="db-poses-list" class="space-y-2 max-h-60 overflow-y-auto custom-scroll pr-1">
+                <!-- Dinámico -->
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="border-t border-white/10 pt-4">
+            <button onclick="exportDB()" class="w-full mb-2 bg-white/10 hover:bg-white/20 py-2 rounded-xl text-white text-xs flex justify-center items-center gap-2 transition-colors"><i data-lucide="copy" class="w-4 h-4"></i> Exportar DB (Copiar)</button>
+            <button onclick="document.getElementById('import-section').classList.toggle('hidden')" class="w-full mb-2 bg-transparent border border-white/10 hover:bg-white/5 py-2 rounded-xl text-white/50 text-xs flex justify-center items-center gap-2 transition-colors"><i data-lucide="download" class="w-4 h-4"></i> Importar DB</button>
+
+            <div id="import-section" class="hidden mt-2">
+                <textarea id="import-textarea" rows="3" placeholder="Pega el código JSON aquí..." class="w-full bg-black/50 border border-white/10 rounded-lg p-2 text-white text-xs mb-2 focus:outline-none focus:border-purple-500"></textarea>
+                <button onclick="executeImport()" class="w-full bg-red-600 hover:bg-red-500 py-2 rounded-lg text-white font-bold text-xs transition-colors">Sobrescribir DB</button>
+            </div>
+        </div>
+
+        <div id="db-feedback" class="hidden text-center text-green-400 text-xs font-bold mt-4 p-2 bg-green-900/20 rounded-lg border border-green-500/30"></div>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+    const escalationLevels = {
+        1: { actions: ["Besar suavemente", "Acariciar lento", "Rozar con los labios", "Dar besos húmedos", "Soplar suavemente", "Masajear con amor", "Respirar sobre"], parts: ["el Cuello", "los Hombros", "la Nuca", "las Manos", "la Espalda alta", "la Mejilla", "la Clavícula"], colorAction: "bg-pink-400", colorPart: "bg-purple-300" },
+        2: { actions: ["Besar apasionadamente", "Lamer lentamente", "Morder los labios de", "Frotar tu cuerpo contra", "Chupar suavemente", "Apretar con firmeza", "Masajear intensamente"], parts: ["el Lóbulo de la oreja", "el Vientre", "la Espalda baja", "la Cintura", "el Pecho", "el Ombligo", "la Cadera"], colorAction: "bg-red-500", colorPart: "bg-purple-500" },
+        3: { actions: ["Besar con lengua", "Morder juguetón", "Lamer y chupar", "Rozar tu intimidad contra", "Acariciar excitadamente", "Respirar agitadamente sobre"], parts: ["el Interior del muslo", "el Bajo vientre", "la Entrepierna", "los Glúteos", "los Pezones", "el Cuello (zona sensible)"], colorAction: "bg-red-700", colorPart: "bg-purple-700" }
+    };
+    const times = ["10 segundos", "15 segundos", "20 segundos", "30 segundos", "45 segundos"];
+
+    // --- BASE DE DATOS PERSONALIZADA DEL USUARIO ---
+    const defaultPoses = [
+        {"img":"11_1.png","name":"Oral Recostado","desc":"Relájate y recibe todo el placer.","type":"Oral"},
+        {"name":"Oral piernas Arriba","desc":"Placer mutuo simultáneo.","type":"Oral","img":"11_4.png"},
+        {"img":"11_5.png","name":"El Clavado","desc":"Explora cada rincón con tu lengua.","type":"Oral"},
+        {"img":"11_11.png","name":"Oral Trasero","desc":"Placer oral desde atrás. Muy erótico.","type":"Oral"},
+        {"img":"11_13_3.png","name":"La Ostra","desc":"Acurrucados para caricias orales.","type":"Oral"},
+        {"img":"11_9_3.png","name":"Tijeras Orales","desc":"Acceso mutuo recostados de lado.","type":"Oral"},
+        {"name":"413 anal","desc":"Versión relajada del 69.","type":"Anal","img":"2_4_5.png"},
+        {"img":"1_3_3.png","name":"La Vaquera","desc":"La mujer arriba mirándote de frente.","type":"Vaginal"},
+        {"img":"3_2_3.png","name":"El Misionero","desc":"Clásico cara a cara. Pura intimidad.","type":"Vaginal"},
+        {"img":"4_5_2.png","name":"Perrito","desc":"Cuatro patas. El instinto domina.","type":"Vaginal"},
+        {"img":"1_5.png","name":"El Abrazo","desc":"Contacto pecho con pecho.","type":"Vaginal"},
+        {"name":"La Cuchara","desc":"La postura de la calma y la conexión.","type":"Oral","img":"10_1.png"},
+        {"img":"1_9.png","name":"Vaquera Invertida","desc":"Ella arriba de espaldas.","type":"Vaginal"},
+        {"img":"1_27_2.png","name":"La Fusión","desc":"Mujer acostada boca abajo sobre el hombre.","type":"Vaginal"},
+        {"img":"5_7.png","name":"Misionero Erguido","desc":"Tú arrodillado recto entre sus piernas.","type":"Vaginal"},
+        {"name":"La monja","desc":"Sentada de espaldas apoyada en rodillas.","type":"Anal","img":"2_9_3.png"},
+        {"img":"3_6.png","name":"La Mariposa","desc":"Ella al borde de la cama.","type":"Vaginal"},
+        {"name":"Flash","desc":"Pies apoyados para mejor estabilidad.","type":"Vaginal","img":"3_19_2.png"},
+        {"img":"4_11.png","name":"Boca Abajo","desc":"Ella plana boca abajo.","type":"Vaginal"},
+        {"img":"1_22_2.png","name":"Silla Reclinada","desc":"Hombre apoyado en brazos, mujer encima.","type":"Vaginal"},
+        {"img":"1_25_3.png","name":"El Loto","desc":"Sentados frente a frente entrelazados.","type":"Vaginal"},
+        {"img":"2_10_3.png","name":"El Tobogán","desc":"Piernas de ella estiradas sobre las tuyas.","type":"Vaginal"},
+        {"img":"3_4_3.png","name":"La Plancha","desc":"Misionero atlético apoyado en brazos.","type":"Vaginal"},
+        {"img":"3_5_3.png","name":"El Yunque","desc":"Sus piernas en tus hombros. Profundo.","type":"Vaginal"},
+        {"name":"Estilo Cachorro","desc":"Pecho abajo, pelvis arriba.","type":"Anal","img":"4_7_3.png"},
+        {"img":"3_8.png","name":"Las Tijeras","desc":"Cuerpos en X de lado. Fricción.","type":"Vaginal"},
+        {"img":"3_16_3.png","name":"Alineación Coital","desc":"Deslizamiento y presión pélvica.","type":"Vaginal"},
+        {"name":"El Elefante","desc":"Ella en cama, tú de pie detrás.","type":"Anal","img":"4_19_4.png"},
+        {"img":"5_19_3.png","name":"El Observatorio","desc":"El hombre sentado reclinado.","type":"Vaginal"},
+        {"name":"Diamante","desc":"Frente a frente de lado.","type":"Anal","img":"5_21_4.png"},
+        {"img":"5_24_4.png","name":"Ángulo Lateral","desc":"De lado levantando pierna.","type":"Vaginal"},
+        {"img":"6_6.png","name":"La Cuna","desc":"Hombre sentado sostiene a mujer.","type":"Vaginal"},
+        {"name":"De Pie Atrás","desc":"Ambos de pie, penetración trasera.","type":"Anal","img":"7_1.png"},
+        {"img":"7_3.png","name":"Contra la Pared","desc":"Contra la pared. Firmeza.","type":"Vaginal"},
+        {"name":"Perrito Plano","desc":"Perrito plano para contacto total.","type":"Anal","img":"8_2.png"},
+        {"img":"8_6_2.png","name":"Entrada Lateral","desc":"Entrada lateral recostados.","type":"Vaginal"},
+        {"name":"El Nudo","desc":"Nudo humano de extremidades.","type":"Oral","img":"10_9_2.png"},
+        {"img":"1_10_2.png","name":"La Rana","desc":"En cuclillas sobre el hombre.","type":"Vaginal"},
+        {"img":"1_14_3.png","name":"Rana Invertida","desc":"En cuclillas de espaldas.","type":"Vaginal"},
+        {"img":"1_19_3.png","name":"El Arco Puente","desc":"Arco hacia atrás sujetando piernas.","type":"Vaginal"},
+        {"img":"2_11_2.png","name":"Sentadilla Invertida","desc":"Sentadilla profunda de espaldas.","type":"Vaginal"},
+        {"img":"3_22_2.png","name":"La Vela","desc":"Piernas al cielo. Elevación máxima.","type":"Vaginal"}
+    ];
+
+    let poses = [];
+    try {
+        const stored = localStorage.getItem('luckyRedPoses');
+        poses = stored ? JSON.parse(stored) : defaultPoses;
+        if(!Array.isArray(poses) || poses.length === 0) poses = defaultPoses;
+    } catch(e) { poses = defaultPoses; }
+
+    function savePoses() { localStorage.setItem('luckyRedPoses', JSON.stringify(poses)); }
+
+    // --- FILTROS DE TIPO ---
+    let activeFilters = { Vaginal: true, Oral: true, Anal: true, Otra: true };
+    try {
+        const storedF = localStorage.getItem('luckyRedFilters');
+        if(storedF) activeFilters = JSON.parse(storedF);
+    } catch(e) {}
+
+    function updateFilterUI() {
+        document.getElementById('filter-vaginal').checked = activeFilters.Vaginal;
+        document.getElementById('filter-oral').checked = activeFilters.Oral;
+        document.getElementById('filter-anal').checked = activeFilters.Anal;
+        document.getElementById('filter-otra').checked = activeFilters.Otra;
+    }
+
+    function saveFilters() {
+        activeFilters.Vaginal = document.getElementById('filter-vaginal').checked;
+        activeFilters.Oral = document.getElementById('filter-oral').checked;
+        activeFilters.Anal = document.getElementById('filter-anal').checked;
+        activeFilters.Otra = document.getElementById('filter-otra').checked;
+        localStorage.setItem('luckyRedFilters', JSON.stringify(activeFilters));
+    }
+
+    // --- ESTADO ---
+    let p1Name = "Jugador 1", p2Name = "Jugador 2", currentPlayer = 1;
+    let rollCount = 0, isFirstRoll = true;
+    let actoRounds = 0, hasPenetrated = false, currentPoseName = "";
+
+    let voiceEnabled = false, timerMode = 'dice', manualTime = 30, currentTimerVal = 0, timerInterval = null, timerRunning = false, activeView = 'setup', currentLevel = 1;
+
+    let globalUtterance = null;
+    let synthVoices = [];
+
+    lucide.createIcons();
+
+    // --- INICIALIZACIÓN Y SETUP ---
+    function finishSetup() {
+        const i1 = document.getElementById('setup-p1').value.trim();
+        const i2 = document.getElementById('setup-p2').value.trim();
+        if(i1) p1Name = i1;
+        if(i2) p2Name = i2;
+
+        // Replicar en ajustes
+        document.getElementById('p1-name').value = p1Name;
+        document.getElementById('p2-name').value = p2Name;
+
+        document.getElementById('welcome-names').innerText = `Hola ${p1Name} & ${p2Name}`;
+        updateTurnDisplay();
+
+        document.getElementById('view-setup').classList.add('hidden-screen');
+        switchView('menu');
+    }
+
+    function updateNamesFromSettings() {
+        const i1 = document.getElementById('p1-name');
+        const i2 = document.getElementById('p2-name');
+        p1Name = i1 ? i1.value : "Jugador 1";
+        p2Name = i2 ? i2.value : "Jugador 2";
+        document.getElementById('welcome-names').innerText = `Hola ${p1Name} & ${p2Name}`;
+        updateTurnDisplay();
+    }
+
+    function updateTurnDisplay() {
+        const ind = document.getElementById('turn-indicator');
+        if (ind) ind.innerHTML = `${currentPlayer===1?p1Name:p2Name} <span class="text-red-500 text-sm mx-1">➜</span> ${currentPlayer===1?p2Name:p1Name}`;
+    }
+
+    // --- NAVEGACIÓN ---
+    function switchView(v) {
+        ['view-menu','view-previo','view-acto','app-header'].forEach(id=>{
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden-screen');
+        });
+        stopTimer();
+        if(v==='menu') {
+            document.getElementById('view-menu').classList.remove('hidden-screen');
+            // Reset de la sesión del Acto al salir al menú
+            actoRounds = 0;
+            hasPenetrated = false;
+        } else {
+            document.getElementById('app-header').classList.remove('hidden-screen');
+            document.getElementById('view-'+v).classList.remove('hidden-screen');
+            document.getElementById('header-title').innerText = v==='previo'?'El Previo':'En el Acto';
+            activeView = v;
+            if(v==='acto'){ updateTimerDisplay(manualTime,'acto'); currentTimerVal=manualTime; }
+        }
+        lucide.createIcons();
+    }
+
+    // --- BÚSQUEDA EN GOOGLE ---
+    function searchCurrentPose() {
+        if(!currentPoseName) return;
+        const query = encodeURIComponent(currentPoseName + " kamasutra pose silhouette");
+        window.open(`https://www.google.com/search?tbm=isch&q=${query}`, '_blank');
+    }
+
+    function searchEditorPose() {
+        const name = document.getElementById('new-pose-name').value.trim();
+        if(!name) { showFeedback("Escribe un nombre primero para buscar", true); return; }
+        const query = encodeURIComponent(name + " kamasutra pose silhouette");
+        window.open(`https://www.google.com/search?tbm=isch&q=${query}`, '_blank');
+    }
+
+    // --- ESCALADA ---
+    function setLevel(lvl) {
+        currentLevel = lvl;
+        const bar = document.getElementById('temp-bar'), text = document.getElementById('temp-text');
+        if(lvl === 1) { if(bar) bar.style.width='33%'; if(text) text.innerText='Nivel 1: Seducción'; }
+        else if(lvl === 2) { if(bar) bar.style.width='66%'; if(text) text.innerText='Nivel 2: Deseo'; }
+        else { if(bar) bar.style.width='100%'; if(text) text.innerText='Nivel 3: Fuego'; }
+
+        const ca = document.getElementById('color-action'), cp = document.getElementById('color-part');
+        if(ca) ca.className = `absolute left-0 top-0 bottom-0 w-1.5 transition-colors duration-500 ${escalationLevels[lvl].colorAction}`;
+        if(cp) cp.className = `absolute left-0 top-0 bottom-0 w-1.5 transition-colors duration-500 ${escalationLevels[lvl].colorPart}`;
+    }
+
+    function resetGameProgression() {
+        rollCount = 0; isFirstRoll = true; currentPlayer = 1; setLevel(1); updateTurnDisplay();
+        const rt = document.getElementById('roll-count-text'); if(rt) rt.innerText = `Ronda 0`;
+        const bGo = document.getElementById('btn-go-acto'); if(bGo) { bGo.classList.add('hidden'); bGo.classList.remove('animate-pulse'); }
+        toggleSettings();
+    }
+
+    // --- PREVIO ---
+    function rollPrevio() {
+        const btn = document.getElementById('btn-roll-previo');
+        if(!btn || btn.classList.contains('opacity-50')) return;
+
+        nativeVibrate(50);
+
+        if (!isFirstRoll) currentPlayer = currentPlayer === 1 ? 2 : 1;
+        isFirstRoll = false; updateTurnDisplay();
+
+        rollCount++;
+        const rt = document.getElementById('roll-count-text'); if(rt) rt.innerText = `Ronda ${rollCount}`;
+
+        let newLevel = 1;
+        if (rollCount > 3 && rollCount <= 6) newLevel = 2;
+        if (rollCount > 6) newLevel = 3;
+        if (newLevel !== currentLevel) setLevel(newLevel);
+
+        if (rollCount >= 6) {
+            const bGo = document.getElementById('btn-go-acto');
+            if(bGo) { bGo.classList.remove('hidden'); bGo.classList.add('animate-pulse'); }
+        }
+
+        stopTimer();
+        const tp = document.getElementById('timer-previo'); if(tp) tp.classList.add('hidden');
+        btn.classList.add('opacity-50', 'scale-95');
+        ['card-action','card-part','card-time'].forEach(id=>{ const el = document.getElementById(id); if(el) el.classList.add('shake'); });
+
+        let steps = 0;
+        const intv = setInterval(()=>{
+            const rA = escalationLevels[currentLevel].actions[Math.floor(Math.random()*escalationLevels[currentLevel].actions.length)];
+            const rP = escalationLevels[currentLevel].parts[Math.floor(Math.random()*escalationLevels[currentLevel].parts.length)];
+            const rT = times[Math.floor(Math.random()*times.length)];
+
+            document.getElementById('res-action').innerText = rA;
+            document.getElementById('res-part').innerText = rP;
+            document.getElementById('res-time').innerText = timerMode === 'manual' ? `${manualTime}s (Fijo)` : rT;
+
+            steps++;
+            if(steps >= 15){ clearInterval(intv); finalizePrevio(rA, rP, rT); }
+        }, 80);
+    }
+
+    function finalizePrevio(act, part, timeStr) {
+        ['card-action','card-part','card-time'].forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.remove('shake'); });
+        document.getElementById('btn-roll-previo').classList.remove('opacity-50','scale-95');
+
+        let s = timerMode === 'manual' ? manualTime : (parseInt(timeStr)||30);
+        currentTimerVal = s; updateTimerDisplay(s, 'previo');
+        document.getElementById('timer-previo').classList.remove('hidden');
+
+        if(voiceEnabled) {
+            const actName = currentPlayer === 1 ? p1Name : p2Name;
+            const pasName = currentPlayer === 1 ? p2Name : p1Name;
+            speak(`${actName}, debes ${act.toLowerCase()} en ${part.toLowerCase()} a ${pasName}, durante ${s} segundos.`);
+        }
+    }
+
+    // --- ACTO (CON INTELIGENCIA Y BLOQUEO) ---
+    function rollActo() {
+        const btn=document.getElementById('btn-roll-acto');
+        if(btn) { btn.classList.add('scale-95','opacity-80'); setTimeout(()=>btn.classList.remove('scale-95','opacity-80'),150); }
+        stopTimer();
+
+        nativeVibrate(50);
+
+        const el=document.getElementById('pose-name');
+        if(el) el.style.opacity=0;
+
+        setTimeout(()=>{
+            actoRounds++;
+
+            let validPoses = poses.filter(p => activeFilters[p.type]);
+            if (validPoses.length === 0) validPoses = poses;
+
+            let pool = [];
+
+            if (actoRounds <= 4 && activeFilters.Oral && !hasPenetrated) {
+                pool = validPoses.filter(p => p.type === 'Oral');
+                if (pool.length === 0) {
+                    pool = validPoses.filter(p => p.type !== 'Oral');
+                    hasPenetrated = true;
+                }
+            } else {
+                pool = validPoses.filter(p => p.type !== 'Oral');
+                hasPenetrated = true;
+                if (pool.length === 0) pool = validPoses;
+            }
+
+            const p = pool[Math.floor(Math.random() * pool.length)];
+            currentPoseName = p.name;
+
+            if(el) el.innerText=p.name;
+            const pDesc = document.getElementById('pose-desc'); if(pDesc) pDesc.innerText=p.desc;
+            if(el) el.style.opacity=1;
+
+            const tb = document.getElementById('pose-type-badge');
+            if (tb && p.type) {
+                tb.innerText = p.type;
+                tb.classList.remove('hidden');
+                if(p.type === 'Anal') tb.className = 'bg-purple-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 shadow-lg tracking-widest border border-purple-400/30';
+                else if(p.type === 'Oral') tb.className = 'bg-pink-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 shadow-lg tracking-widest border border-pink-400/30';
+                else if(p.type === 'Vaginal') tb.className = 'bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 shadow-lg tracking-widest border border-red-400/30';
+                else tb.className = 'bg-gray-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase mb-2 shadow-lg tracking-widest border border-gray-400/30';
+            } else if(tb) tb.classList.add('hidden');
+
+            const imgEl = document.getElementById('pose-img'), iconEl = document.getElementById('pose-icon');
+            if (imgEl && iconEl) {
+                imgEl.src = p.img;
+                imgEl.onload = () => { imgEl.classList.remove('hidden'); iconEl.classList.add('hidden'); };
+                imgEl.onerror = () => { imgEl.classList.add('hidden'); iconEl.classList.remove('hidden'); };
+            }
+
+            currentTimerVal=manualTime; updateTimerDisplay(manualTime,'acto');
+
+            if(voiceEnabled) speak(`Posición: ${p.name}`);
+        },200);
+    }
+
+    // --- BD MODAL Y EDITOR ---
+    let editingIndex = -1;
+
+    function openDBModal() {
+        document.getElementById('settings-modal').classList.add('hidden-screen');
+        document.getElementById('db-modal').classList.remove('hidden-screen');
+        renderDBList();
+    }
+
+    function closeDBModal() {
+        document.getElementById('db-modal').classList.add('hidden-screen');
+        document.getElementById('settings-modal').classList.remove('hidden-screen');
+        cancelEdit();
+    }
+
+    function renderDBList() {
+        document.getElementById('db-count').innerText = poses.length;
+        const list = document.getElementById('db-poses-list');
+        list.innerHTML = '';
+        poses.forEach((p, idx) => {
+            let badgeColor = 'text-gray-400';
+            if(p.type === 'Vaginal') badgeColor = 'text-red-400';
+            else if(p.type === 'Oral') badgeColor = 'text-pink-400';
+            else if(p.type === 'Anal') badgeColor = 'text-purple-400';
+
+            list.innerHTML += `
+                <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5 mb-2 hover:bg-white/10 transition-colors">
+                    <div class="flex flex-col flex-1 pr-2">
+                        <span class="text-xs text-white font-bold">${p.name} <span class="text-[9px] ${badgeColor} ml-1 uppercase tracking-widest">[${p.type}]</span></span>
+                        <span class="text-[10px] text-white/50 truncate max-w-[200px] mt-0.5">${p.desc}</span>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                        <button onclick="editPose(${idx})" class="text-blue-400 hover:text-blue-300 p-2 bg-black/30 rounded-lg"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                        <button onclick="deletePose(${idx})" class="text-red-500 hover:text-red-400 p-2 bg-black/30 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        lucide.createIcons();
+    }
+
+    function savePoseFromUI() {
+        const name = document.getElementById('new-pose-name').value.trim();
+        const desc = document.getElementById('new-pose-desc').value.trim();
+        const type = document.getElementById('new-pose-type').value;
+        const img = document.getElementById('new-pose-img').value.trim();
+
+        if(!name || !desc || !img) { showFeedback("Llenar Nombre, Descripción e Imagen.", true); return; }
+
+        if(editingIndex >= 0) {
+            poses[editingIndex] = { name, desc, type, img };
+            showFeedback(`¡"${name}" actualizada!`);
+        } else {
+            poses.push({ name, desc, type, img });
+            showFeedback(`¡"${name}" agregada!`);
+        }
+
+        savePoses(); renderDBList(); cancelEdit();
+    }
+
+    function editPose(idx) {
+        editingIndex = idx;
+        const p = poses[idx];
+        document.getElementById('new-pose-name').value = p.name;
+        document.getElementById('new-pose-desc').value = p.desc;
+        document.getElementById('new-pose-type').value = p.type;
+        document.getElementById('new-pose-img').value = p.img;
+
+        document.getElementById('form-title').innerText = "Editando Postura";
+        document.getElementById('btn-save-pose').innerText = "Actualizar";
+        document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+        document.querySelector('#db-modal .glass-panel').scrollTop = 0;
+        previewEditorImage();
+    }
+
+    function cancelEdit() {
+        editingIndex = -1;
+        document.getElementById('new-pose-name').value = '';
+        document.getElementById('new-pose-desc').value = '';
+        document.getElementById('new-pose-type').value = 'Vaginal';
+        document.getElementById('new-pose-img').value = '';
+
+        document.getElementById('form-title').innerText = "Agregar Nueva Postura";
+        document.getElementById('btn-save-pose').innerText = "Guardar";
+        document.getElementById('btn-cancel-edit').classList.add('hidden');
+        previewEditorImage();
+    }
+
+    function previewEditorImage() {
+        const imgName = document.getElementById('new-pose-img').value.trim();
+        const previewEl = document.getElementById('editor-img-preview');
+        const iconEl = document.getElementById('editor-img-icon');
+
+        if(imgName) {
+            previewEl.src = imgName;
+            previewEl.onload = () => { previewEl.classList.remove('hidden'); iconEl.classList.add('hidden'); };
+            previewEl.onerror = () => { previewEl.classList.add('hidden'); iconEl.classList.remove('hidden'); };
+        } else {
+            previewEl.classList.add('hidden');
+            iconEl.classList.remove('hidden');
+        }
+    }
+
+    function deletePose(idx) {
+        if(confirm(`¿Estás seguro de eliminar "${poses[idx].name}"?`)) {
+            poses.splice(idx, 1); savePoses(); renderDBList();
+            if(editingIndex === idx) cancelEdit();
+        }
+    }
+
+    function showFeedback(msg, isError = false) {
+        const f = document.getElementById('db-feedback');
+        f.innerText = msg;
+        f.className = isError
+            ? "text-center text-red-400 text-xs font-bold mt-4 p-2 bg-red-900/20 rounded-lg border border-red-500/30"
+            : "text-center text-green-400 text-xs font-bold mt-4 p-2 bg-green-900/20 rounded-lg border border-green-500/30";
+        f.classList.remove('hidden');
+        setTimeout(() => f.classList.add('hidden'), 3500);
+    }
+
+    function exportDB() {
+        const el = document.createElement('textarea');
+        el.value = JSON.stringify(poses);
+        document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+        showFeedback("¡Código copiado! Guárdalo para compartir.");
+    }
+
+    function executeImport() {
+        const val = document.getElementById('import-textarea').value.trim();
+        if(!val) return;
+        try {
+            const parsed = JSON.parse(val);
+            if(Array.isArray(parsed) && parsed.length > 0 && parsed[0].name) {
+                poses = parsed; savePoses(); renderDBList();
+                document.getElementById('import-section').classList.add('hidden');
+                document.getElementById('import-textarea').value = '';
+                showFeedback("¡DB Importada Correctamente!");
+            } else showFeedback("Formato JSON incorrecto.", true);
+        } catch(e) { showFeedback("Código inválido.", true); }
+    }
+
+    // --- FUNCIONES NATIVAS (Voz y Vibración) ---
+    function nativeVibrate(ms) {
+        if(window.Android && window.Android.vibrate) window.Android.vibrate(ms);
+        else if(navigator.vibrate) navigator.vibrate(ms);
+    }
+
+    function nativeVibratePattern() {
+        if(window.Android && window.Android.vibratePattern) window.Android.vibratePattern();
+        else if(navigator.vibrate) navigator.vibrate([500,200,500,200,1000]);
+    }
+
+    // --- AUDIO, TIMER Y SETTINGS ---
+    if ('speechSynthesis' in window) {
+        synthVoices = window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => { synthVoices = window.speechSynthesis.getVoices(); };
+    }
+
+    function toggleVoice(){
+        voiceEnabled=!voiceEnabled;
+        const btn=document.getElementById('voiceBtn');
+        if(btn) {
+            if(voiceEnabled){ btn.classList.replace('bg-red-500/10','bg-red-500'); btn.classList.replace('text-red-400','text-white'); speak("Voz activada"); }
+            else { btn.classList.replace('bg-red-500','bg-red-500/10'); btn.classList.replace('text-white','text-red-400'); window.speechSynthesis.cancel(); }
+        }
+    }
+
+    function speak(t){
+        // Si existe el puente de Android, usar la voz potente del sistema
+        if(window.Android && window.Android.speak) {
+            window.Android.speak(t);
+            return;
+        }
+
+        // Fallback web (Por si lo abres en Chrome normal)
+        if(!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+
+        globalUtterance = new SpeechSynthesisUtterance(t);
+        if(synthVoices.length > 0) {
+            const esVoice = synthVoices.find(v => v.lang.includes('es'));
+            if (esVoice) globalUtterance.voice = esVoice;
+        }
+
+        globalUtterance.lang='es-ES';
+        globalUtterance.rate=0.9;
+        globalUtterance.pitch=0.8;
+        globalUtterance.volume=1;
+        window.speechSynthesis.speak(globalUtterance);
+    }
+
+    function formatTime(s){ const m=Math.floor(s/60), sec=s%60; return `${m<10?'0':''}${m}:${sec<10?'0':''}${sec}`; }
+    function updateTimerDisplay(s,t){ const e=document.getElementById(`timer-display-${t}`); if(e) e.innerText=formatTime(s); }
+    function toggleTimer(t){ if(timerRunning) stopTimer(); else startTimer(t); }
+    function startTimer(t){
+        if(currentTimerVal<=0)return;
+        timerRunning=true;
+        const btn = document.getElementById(`btn-timer-${t}`);
+        if(btn) btn.innerHTML=`<i data-lucide="pause" class="w-${t==='acto'?'6':'4'} h-${t==='acto'?'6':'4'} fill-current"></i>`;
+        lucide.createIcons();
+
+        timerInterval=setInterval(()=>{
+            currentTimerVal--; updateTimerDisplay(currentTimerVal,t);
+
+            // --- AL TERMINAR EL TIEMPO ---
+            if(currentTimerVal<=0){
+                stopTimer();
+                nativeVibratePattern(); // Ahora usa el motor fuerte del celular
+                if(voiceEnabled) speak("Tiempo terminado. Siguiente turno.");
+            }
+        }, 1000);
+    }
+    function stopTimer(){
+        clearInterval(timerInterval); timerRunning=false;
+        ['previo','acto'].forEach(t=>{ const b=document.getElementById(`btn-timer-${t}`); if(b) b.innerHTML=`<i data-lucide="play" class="w-${t==='acto'?'6':'4'} h-${t==='acto'?'6':'4'} fill-current"></i>`; });
+        lucide.createIcons();
+    }
+    function resetTimer(t){ stopTimer(); currentTimerVal=manualTime; updateTimerDisplay(manualTime,t); }
+    function toggleSettings(){ const m = document.getElementById('settings-modal'); if(m) m.classList.toggle('hidden-screen'); }
+    function setTimerMode(m){
+        timerMode=m;
+        const d=document.getElementById('mode-dice'), mn=document.getElementById('mode-manual'), c=document.getElementById('manual-timer-control');
+        if(d && mn && c) {
+            if(m==='dice'){ d.classList.replace('text-white/50','text-white'); d.classList.add('bg-white/10'); mn.classList.replace('text-white','text-white/50'); mn.classList.remove('bg-white/10'); c.classList.add('opacity-50','pointer-events-none'); }
+            else { mn.classList.replace('text-white/50','text-white'); mn.classList.add('bg-white/10'); d.classList.replace('text-white','text-white/50'); d.classList.remove('bg-white/10'); c.classList.remove('opacity-50','pointer-events-none'); }
+        }
+    }
+    function updateManualVal(v){
+        manualTime=parseInt(v);
+        const mv = document.getElementById('manual-val'); if(mv) mv.innerText=manualTime<60?manualTime+'s':Math.floor(manualTime/60)+'m '+manualTime%60+'s';
+        if(activeView==='acto' && !timerRunning){ currentTimerVal=manualTime; updateTimerDisplay(manualTime,'acto'); }
+    }
+
+    // Init
+    setTimerMode('dice'); setLevel(1); updateFilterUI();
+</script>
+</body>
+</html>

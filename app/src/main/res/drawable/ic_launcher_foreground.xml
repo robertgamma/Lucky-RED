@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Icono de Fuego Central -->
+    <path
+        android:fillColor="#ef4444"
+        android:pathData="M54,20C54,20 40,35 40,55C40,65 47,75 54,75C61,75 68,65 68,55C68,35 54,20 54,20ZM54,65C50,65 46,62 46,55C46,45 54,35 54,35C54,35 62,45 62,55C62,62 58,65 54,65Z" />
+    <!-- Brillo del fuego -->
+    <path
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.2"
+        android:pathData="M54,35C54,35 48,42 48,50C48,54 51,57 54,57C57,57 60,54 60,50C60,42 54,35 54,35Z" />
+</vector>
